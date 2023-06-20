@@ -1,0 +1,63 @@
+https://dbdiagram.io/d
+
+https://console.firebase.google.com/project/license-image-store/firestore/data/~2FUserAvatar~2F6bnPFIYGvVt59FGesTK3
+
+Table ORGANIZATIONS {
+  organization_id int [pk]
+  organization_name varchar(25)
+}
+
+Table USERS {
+  organization_id int
+  user_id int [pk]
+  user_name varchar(25)
+  first_name varchar(25)
+  last_name varchar(25)
+  encrypted_password varchar(100)
+  email_address varchar(30)
+  role_in_organization varchar(25)
+  status varchar(25)
+}
+
+Ref: USERS.organization_id > ORGANIZATIONS.organization_id
+
+Table AVATARS {
+  user_id int [pk]
+  is_avatar_image_set int
+  avatar_image_firebase_id varchar(25)
+}
+
+Ref: AVATARS.user_id > USERS.user_id
+
+Table ACCESS_CODES {
+  access_code_id int [pk]
+  access_code varchar(25)
+  organization_id int
+}
+
+Ref: ACCESS_CODES.organization_id > ORGANIZATIONS.organization_id
+
+Table MESSAGES {
+  message_id int [pk]
+  from_id int
+  to_id int
+  message varchar(255)
+  message_date TIMESTAMP
+  read int
+}
+
+Ref: MESSAGES.from_id > USERS.user_id
+Ref: MESSAGES.to_id > USERS.user_id
+
+Table NEWS {
+  news_id int [pk]
+  user_id int
+  news_text varchar(25)
+  news_date TIMESTAMP
+}
+
+Ref: NEWS.user_id > USERS.user_id
+
+
+
+TBD - trebuie rezolvat in baza de data cu noua configuratie de mai sus, in care am exclus tabela conversations

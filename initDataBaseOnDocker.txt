@@ -1,0 +1,39 @@
+Pentru a instala container-ul Docker al Oracle Database Enterprise Edition urmați pașii:
+
+Creați-vă cont Oracle (dacă aveți deja treceți la pasul următor).
+Conectați-vă la registry-ul Docker Oracle folosind datele contului Oracle:
+docker login container-registry.oracle.com
+Rulați comanda:
+docker pull container-registry.oracle.com/database/express:latest
+Notă: Descărcarea imaginii este lentă și poate dura până la 4 ore.
+
+Porniți container-ul bazat pe imaginea descărcată folosind comanda (pentru mai multe optiuni consultați acest link > Database > express):
+docker run -d --name my-oracle-db -p 1523:1521 -p 5503:5500 -e ORACLE_PWD=parolaAiaPuternic4 container-registry.oracle.com/database/express:latest
+                                      |            | ceva diferit de 5500
+                                     port ales, dar sa nu se puna 1521 pentru ca se confunda cu cel de pe oracle windows
+
+docker exec -it my-oracle-db bash - terminal interactiv
+
+sqlplus /nolog
+
+connect / as sysdba
+
+alter session set "_ORACLE_SCRIPT"=true;
+
+create user student identified by student;
+
+connect /as sysdba
+
+GRANT CREATE SESSION TO student;
+
+
+
+in codul nodeJs:
+
+    connection = await oracledb.getConnection( {
+      user: "student",
+      password: "student",
+      connectString: "localhost:1523/XE"
+    });
+
+

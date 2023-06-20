@@ -1,0 +1,26 @@
+CREATE TABLE ORGANIZATIONS (organization_id int, organization_name varchar(25),  PRIMARY KEY (organization_id)); 
+CREATE TABLE USERS_DETAILS (organization_id int, user_id int, first_name varchar(25), last_name varchar(25), email_address varchar(30) UNIQUE, PRIMARY KEY (user_id));
+CREATE TABLE USERS_AUTHENTICATION (user_id int, user_name varchar(25) UNIQUE, encrypted_password varchar(100), PRIMARY KEY (user_id));
+ALTER TABLE USERS_AUTHENTICATION ADD FOREIGN KEY (user_id) REFERENCES USERS (user_id);
+CREATE TABLE USERS_ROLES (user_id int, role_in_organization varchar(25), PRIMARY KEY (user_id));
+ALTER TABLE USERS_ROLES ADD FOREIGN KEY (user_id) REFERENCES USERS (user_id);
+CREATE TABLE USERS_STATUS (user_id int, status varchar(25),  PRIMARY KEY (user_id));
+ALTER TABLE USERS_STATUS ADD FOREIGN KEY (user_id) REFERENCES USERS (user_id);
+
+ALTER TABLE USERS ADD FOREIGN KEY (organization_id) REFERENCES ORGANIZATIONS (organization_id);
+CREATE TABLE AVATARS (user_id int, is_avatar_image_set int, avatar_image_firebase_id varchar(25),  PRIMARY KEY (user_id));
+ALTER TABLE AVATARS ADD FOREIGN KEY (user_id) REFERENCES USERS (user_id); 
+
+CREATE TABLE CONVERSATIONS (conversation_id int, from_ID int, to_ID int, PRIMARY KEY (conversation_id));
+CREATE TABLE ACCESS_CODES (access_code_id int, access_code varchar(25), organization_id int, PRIMARY KEY (access_code_id));
+ALTER TABLE ACCESS_CODES ADD FOREIGN KEY (organization_id) REFERENCES ORGANIZATIONS (organization_id); 
+CREATE TABLE MESSAGES (message_id int, from_ID int, conversation_id int, message varchar(255), message_date TIMESTAMP, PRIMARY KEY (message_id), read int);
+ALTER TABLE MESSAGES ADD FOREIGN KEY (conversation_id) REFERENCES CONVERSATIONS (conversation_id);
+
+CREATE TABLE NEWS (news_id int, user_id int, news_text varchar(25), news_date TIMESTAMP, PRIMARY KEY (news_id));
+ALTER TABLE NEWS ADD FOREIGN KEY (user_id) REFERENCES USERS (user_id);
+
+CREATE TABLE ACTIVITY_LOG (log_id int PRIMARY KEY, activity_type varchar(50), activity_date TIMESTAMP, description varchar(255), PRIMARY KEY (log_id));
+
+
+-- contine greseli in ceea ce priveste Tabela USERS care inca apare pe la alter, desi am inlocuit-o cu altele cu mai putine coloane

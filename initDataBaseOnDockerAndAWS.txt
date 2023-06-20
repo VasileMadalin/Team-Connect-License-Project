@@ -1,0 +1,81 @@
+1. Se creeaza o instanta de EC2 pe amazon web services, t3.xlarge, cu 40 GB stocare si 16 GB RAM si ubuntu, si o cheie de ssh, denumita ChatApp.pem mai jos (vasile2000madalin28@gmail.com, Bucuresti2806)
+
+2. Se deschide instanta si din meniul Security se deschide Security Groups si apoi pe Action -> Edit inbound rules -> 
+Add rule (se adauga cate o regula pentru fiecare port, frontend si backend 3000 respectiv 5000, Custom TCP, 0.0.0.0)    
+
+3. Local se creeaza folder-ul aws care contine directorul public si server al aplicatiei
+
+4. Se foloses urmatoarele comenzi pentru conectarea prin ssh la masina de pe aws si pentru trimiterea prin scp a folder-ului aws
+ssh -i "ChatApp.pem" ubuntu@ec2-16-16-216-250.eu-north-1.compute.amazonaws.com
+scp -i "ChatApp.pem" -r aws ubuntu@ec2-16-16-216-250.eu-north-1.compute.amazonaws.com:
+
+5. Se instaleaza container-ul de Docker al Oracle Database Enterprise Edition conform urmatorilor pasi:
+
+6. Creaza cont Oracle (dacă aveți deja treceți la pasul următor)
+
+7. Conectați-vă la registry-ul Docker Oracle folosind datele contului Oracle:
+  docker login container-registry.oracle.com
+  Notă: vasile_madalin28@yahoo.com, 123456789Madalin!
+
+8. Rulați comanda:
+  docker pull container-registry.oracle.com/database/express:latest
+  Notă: Descărcarea imaginii este lentă și poate dura până la 4 ore.
+
+9. Porniți container-ul bazat pe imaginea descărcată folosind comanda (pentru mai multe optiuni consultați acest link > Database > express):
+  sudo docker run -d --name my-oracle-db -p 1523:1521 -p 5503:5500 -p 3000:3000 -p 5000:5000 -e ORACLE_PWD=parolaAiaPuternic4 container-registry.oracle.com/database/express:latest
+  Notă: porturile 3000 si 5000 trebuie sa fie expuse pentru a permite conectare din exterior la frontend si backend
+
+10. Se foloseste comanda urmatoare pentru a interactiona cu container-ul de Oracle DB 
+  docker exec -it my-oracle-db bash - terminal interactiv
+
+11. Se folosesc urmatoarele comenzi pentru a crea un utilizator care are drepturi depline in baza de date
+  sqlplus /nolog
+
+  connect / as sysdba
+
+  alter session set "_ORACLE_SCRIPT"=true;
+
+  create user student identified by student;
+
+  connect /as sysdba
+
+  GRANT CREATE SESSION TO student;
+
+  GRANT ALL PRIVILEGES TO student;
+
+  se conecteaza student-ul
+  se ruleaza scriptul cu tabelele(se copiaza de pe local din fisierul create_tables.txt)
+12. De pe masina virtuala de aws se copiaza folder aws pe container folosind urmatoarea comanda, unde urmeaza sa fie pornite serviciile
+  sudo docker cp /path/to/aws my-oracle-db:/home/oracle
+
+13. Dupa configurare de la pasul 11 se foloseste urmatoare comanda pentru a intractiona cu container-ul de OracleDB (sunt necesare 
+drepturi de root pentru instalarea unor pachete)
+  sudo docker exec -u root -it my-oracle-db bash
+
+14. Se instaleaza urmatoarele pachete folositoare mai tarziu:
+  yum install gcc-c++ make
+  curl -sL https://rpm.nodesource.com/setup_14.x | bash -
+  yum install nodejs
+  yum install vim-enhanced -y
+
+15. In aws/server/index.js pe container
+La conectarea bazei de date trebuie sa fie:
+    connection = await oracledb.getConnection( {
+      user: "student",
+      password: "student",
+      connectString: "localhost/XE"
+    });
+iar la socket in loc de http://localhost:3000 trebuie sa fie adresa instantei de EC2
+care poate fi gasita in sectiunea connect pe AWS: http://ec2-16-16-220-152.eu-north-1.compute.amazonaws.com:3000
+
+
+16. In aws/public/src/utils/APIRoutes.js
+in loc de export const host = "http://localhost:5000" trebuie sa fie
+export const host = http://ec2-16-16-220-152.eu-north-1.compute.amazonaws.com:5000
+Nota: http://ec2-16-16-216-250.eu-north-1.compute.amazonaws.com este Public IPv4 DNS pentru instanta de EC2
+
+17. In aws/server se ruleaza: 
+npm start
+
+18. In aws/public se ruleaza:
+npm start
